@@ -1,0 +1,36 @@
+server:
+  port: 8080
+spring:
+  datasource:
+    url: jdbc:h2:tcp://localhost/~/kakaopay
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+    database: h2
+  data:
+    web:
+      pageable:
+        default-page-size: 10
+  h2:
+    console:
+      enabled: true
+logging:
+  level:
+    com.kakaopay.throwmoney : debug
+    org:
+      springframework:
+        web: debug
+        jdbc: debug
+        transaction: trace
+      hibernate:
+        SQL: debug
+        type:
+          BasicTypeRegistry: off
+          descriptor.sql.BasicBinder: trace
