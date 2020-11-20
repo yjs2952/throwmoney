@@ -23,7 +23,7 @@ spring:
       enabled: true
 logging:
   level:
-    com.tumblbug : debug
+    com.kakaopay.throwmoney : debug
     org:
       springframework:
         web: debug
