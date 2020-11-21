@@ -6,14 +6,15 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
+    initialization-mode: always
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: create-drop
     properties:
       hibernate:
         format_sql: true
     open-in-view: false
-    database: h2
+    database: mysql
   data:
     web:
       pageable:
@@ -28,9 +29,8 @@ logging:
       springframework:
         web: debug
         jdbc: debug
-        transaction: trace
+#        transaction: trace
       hibernate:
         SQL: debug
         type:
           BasicTypeRegistry: off
-          descriptor.sql.BasicBinder: trace
