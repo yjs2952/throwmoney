@@ -1,5 +1,7 @@
-package com.kakaopay.throwmoney.domain;
+package com.kakaopay.throwmoney.domain.money;
 
+import com.kakaopay.throwmoney.domain.BaseTimeEntity;
+import com.kakaopay.throwmoney.domain.member.Member;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

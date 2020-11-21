@@ -1,5 +1,6 @@
-package com.kakaopay.throwmoney.domain;
+package com.kakaopay.throwmoney.domain.money;
 
+import com.kakaopay.throwmoney.domain.BaseTimeEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor
-public class EventMoney extends BaseTimeEntity{
+public class EventMoney extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,9 +21,9 @@ public class EventMoney extends BaseTimeEntity{
     @Column(length = 3, nullable = false)
     private String token;
 
-    private Long price;
+    private Long amount;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "money_id")
     private Money money;
 
@@ -38,9 +39,9 @@ public class EventMoney extends BaseTimeEntity{
     private EventType eventType;
 
     @Builder
-    public EventMoney(String token, Long price, Money money, String roomId, LocalDateTime expiredDate, LocalDateTime searchableDate, EventStatus eventStatus, EventType eventType) {
+    public EventMoney(String token, Long amount, Money money, String roomId, LocalDateTime expiredDate, LocalDateTime searchableDate, EventStatus eventStatus, EventType eventType) {
         this.token = token;
-        this.price = price;
+        this.amount = amount;
         this.money = money;
         this.roomId = roomId;
         this.expiredDate = expiredDate;

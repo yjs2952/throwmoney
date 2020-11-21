@@ -1,4 +1,4 @@
-package com.kakaopay.throwmoney.domain;
+package com.kakaopay.throwmoney.domain.money;
 
 import lombok.Getter;
 
