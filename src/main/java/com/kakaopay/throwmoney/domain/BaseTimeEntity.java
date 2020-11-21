@@ -1,4 +1,4 @@
-package com.kakaopay.throwmoney.kakaomoney.domain;
+package com.kakaopay.throwmoney.domain;
 
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;

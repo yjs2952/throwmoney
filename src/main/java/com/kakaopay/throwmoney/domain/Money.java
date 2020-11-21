@@ -1,6 +1,5 @@
-package com.kakaopay.throwmoney.kakaomoney.domain;
+package com.kakaopay.throwmoney.domain;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
