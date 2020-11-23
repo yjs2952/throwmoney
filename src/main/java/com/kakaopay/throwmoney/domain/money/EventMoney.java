@@ -72,7 +72,6 @@ public class EventMoney extends BaseTimeEntity {
 
     public void receiveMoney(Long userId, String roomId){
         validate(userId, roomId);
-        this.money.minusMoney(this.getPrice());
         this.eventStatus = EventStatus.DONE;
         this.modifyId = userId;
     }
