@@ -1,10 +1,11 @@
 package com.kakaopay.throwmoney.web.dto;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
 
-@Getter @Setter @ToString
+@Data
 public class ResponseThrowMoneyDto {
-    private String token;
+    private final String token;
 
     @Builder
     public ResponseThrowMoneyDto(String token) {

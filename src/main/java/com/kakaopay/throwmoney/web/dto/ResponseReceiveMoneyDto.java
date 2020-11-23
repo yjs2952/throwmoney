@@ -1,11 +1,9 @@
 package com.kakaopay.throwmoney.web.dto;
 
 import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@ToString
+@Data
 public class ResponseReceiveMoneyDto {
 
     private final Long price;
