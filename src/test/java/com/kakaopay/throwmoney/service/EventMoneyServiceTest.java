@@ -3,10 +3,7 @@ package com.kakaopay.throwmoney.service;
 import com.kakaopay.throwmoney.domain.member.Member;
 import com.kakaopay.throwmoney.domain.money.*;
 import com.kakaopay.throwmoney.domain.money.strategy.GenerateTokenStrategy;
-import com.kakaopay.throwmoney.web.dto.RequestReceiveMoneyDto;
-import com.kakaopay.throwmoney.web.dto.RequestThrowMoneyDto;
-import com.kakaopay.throwmoney.web.dto.ResponseReceiveMoneyDto;
-import com.kakaopay.throwmoney.web.dto.ResponseThrowMoneyDto;
+import com.kakaopay.throwmoney.web.dto.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,7 +40,8 @@ class EventMoneyServiceTest {
     private String roomId;
     private String token;
     private Long createId;
-    private RequestReceiveMoneyDto dto;
+    private RequestReceiveMoneyDto requestReceiveMoneyDto;
+    private RequestEventMoneyDto requestEventMoneyDto;
     private EventMoney eventMoney;
 
     private Money money;
@@ -53,7 +53,11 @@ class EventMoneyServiceTest {
         token = "abc";
         createId = 3L;
 
-        dto = RequestReceiveMoneyDto.builder()
+        requestReceiveMoneyDto = RequestReceiveMoneyDto.builder()
+                .token(token)
+                .build();
+
+        requestEventMoneyDto = RequestEventMoneyDto.builder()
                 .token(token)
                 .build();
 
@@ -107,7 +111,7 @@ class EventMoneyServiceTest {
                 .modifyId(userId)
                 .build()));
 
-        ResponseReceiveMoneyDto responseReceiveMoneyDto = eventMoneyService.receiveMoney(dto, userId, roomId);
+        ResponseReceiveMoneyDto responseReceiveMoneyDto = eventMoneyService.receiveMoney(requestReceiveMoneyDto, userId, roomId);
         assertThat(responseReceiveMoneyDto.getPrice()).isEqualTo(eventMoney.getPrice());
     }
 
@@ -128,7 +132,7 @@ class EventMoneyServiceTest {
                 .build();
 
         when(eventMoneyRepository.findTopByTokenAndEventStatusAndEventTypeOrderByIdDesc(token, EventStatus.WAITING, EventType.THROW)).thenReturn(Optional.of(eventMoney));
-        assertThatThrownBy(() -> eventMoneyService.receiveMoney(dto, createId, roomId)).isInstanceOf(IllegalArgumentException.class).hasMessage("본인이 뿌리기한 머니는 받을 수 없습니다.");
+        assertThatThrownBy(() -> eventMoneyService.receiveMoney(requestReceiveMoneyDto, createId, roomId)).isInstanceOf(IllegalArgumentException.class).hasMessage("본인이 뿌리기한 머니는 받을 수 없습니다.");
     }
 
     @Test
@@ -148,7 +152,7 @@ class EventMoneyServiceTest {
                 .build();
 
         when(eventMoneyRepository.findTopByTokenAndEventStatusAndEventTypeOrderByIdDesc(token, EventStatus.WAITING, EventType.THROW)).thenReturn(Optional.of(eventMoney));
-        assertThatThrownBy(() -> eventMoneyService.receiveMoney(dto, userId, roomId)).isInstanceOf(IllegalStateException.class).hasMessage("유효기간 10분이 지난 머니입니다.");
+        assertThatThrownBy(() -> eventMoneyService.receiveMoney(requestReceiveMoneyDto, userId, roomId)).isInstanceOf(IllegalStateException.class).hasMessage("유효기간 10분이 지난 머니입니다.");
     }
 
     @Test
@@ -170,7 +174,7 @@ class EventMoneyServiceTest {
                 .build();
 
         when(eventMoneyRepository.findTopByTokenAndEventStatusAndEventTypeOrderByIdDesc(token, EventStatus.WAITING, EventType.THROW)).thenReturn(Optional.of(eventMoney));
-        assertThatThrownBy(() -> eventMoneyService.receiveMoney(dto, userId, otherRoomId)).isInstanceOf(IllegalStateException.class).hasMessage("룸에 소속된 사용자가 아닙니다.");
+        assertThatThrownBy(() -> eventMoneyService.receiveMoney(requestReceiveMoneyDto, userId, otherRoomId)).isInstanceOf(IllegalStateException.class).hasMessage("룸에 소속된 사용자가 아닙니다.");
     }
 
     @Test
@@ -190,6 +194,37 @@ class EventMoneyServiceTest {
                 .build();
 
         when(eventMoneyRepository.findTopByTokenAndEventStatusAndEventTypeOrderByIdDesc(token, EventStatus.WAITING, EventType.THROW)).thenReturn(Optional.of(eventMoney));
-        assertThatThrownBy(() -> eventMoneyService.receiveMoney(dto, userId, roomId)).isInstanceOf(IllegalStateException.class).hasMessage("이미 받은 머니입니다.");
+        assertThatThrownBy(() -> eventMoneyService.receiveMoney(requestReceiveMoneyDto, userId, roomId)).isInstanceOf(IllegalStateException.class).hasMessage("이미 받은 머니입니다.");
     }
+
+    @Test
+    @DisplayName("유효하지 않은 토큰 입력 시 예외발생")
+    void getMoneyValidateTokenExceptionTest() {
+        when(eventMoneyRepository.existsByToken(token)).thenReturn(false);
+        assertThatThrownBy(() -> eventMoneyService.getEventMoneyList(requestEventMoneyDto, userId, roomId)).isInstanceOf(IllegalArgumentException.class).hasMessage("유효하지 않은 토큰입니다.");
+    }
+
+    @Test
+    @DisplayName("다른 사람 머니 조회 시 예외발생")
+    void hasOtherMoneyExceptionTest() {
+        eventMoney = EventMoney.builder()
+                .money(money)
+                .eventStatus(EventStatus.DONE)
+                .amount(1000L)
+                .expiredDate(LocalDateTime.now().plusMinutes(10))
+                .token(token)
+                .roomId(roomId)
+                .eventType(EventType.THROW)
+                .createId(createId)
+                .modifyId(createId)
+                .build();
+
+
+        List<EventMoney> eventMoneyList = Collections.singletonList(eventMoney);
+        when(eventMoneyRepository.existsByToken(token)).thenReturn(true);
+        when(eventMoneyRepository.findAllByTokenAndEventStatusAndSearchableDateAfter(token, EventStatus.DONE, LocalDateTime.now())).thenReturn(Optional.of(eventMoneyList));
+        assertThatThrownBy(() -> eventMoneyService.getEventMoneyList(requestEventMoneyDto, userId, roomId)).isInstanceOf(IllegalArgumentException.class).hasMessage("다른 사람의 뿌리기 머니를 조회할 수 없습니다.");
+    }
+
+
 }

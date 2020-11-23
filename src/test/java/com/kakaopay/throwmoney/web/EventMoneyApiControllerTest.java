@@ -2,6 +2,7 @@ package com.kakaopay.throwmoney.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kakaopay.throwmoney.service.EventMoneyService;
+import com.kakaopay.throwmoney.web.dto.RequestEventMoneyDto;
 import com.kakaopay.throwmoney.web.dto.RequestReceiveMoneyDto;
 import com.kakaopay.throwmoney.web.dto.RequestThrowMoneyDto;
 import com.kakaopay.throwmoney.web.dto.ResponseThrowMoneyDto;
@@ -16,8 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -37,6 +37,7 @@ class EventMoneyApiControllerTest {
 
     private RequestThrowMoneyDto throwMoneyParams;
     private RequestReceiveMoneyDto receiveMoneyParams;
+    private RequestEventMoneyDto requestEventMoneyDto;
 
     @BeforeEach
     void setUp() {
@@ -46,6 +47,10 @@ class EventMoneyApiControllerTest {
                 .build();
 
         receiveMoneyParams = RequestReceiveMoneyDto.builder()
+                .token("aaa")
+                .build();
+
+        requestEventMoneyDto = RequestEventMoneyDto.builder()
                 .token("aaa")
                 .build();
     }
@@ -102,6 +107,36 @@ class EventMoneyApiControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(receiveMoneyParams))
                         .header("X-USER-ID", userId)
+                        .header("X-ROOM-ID", roomId)
+        )
+                // then
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("머니 조회 테스트 성공")
+    void getMoneyListTest() throws Exception {
+
+        // given
+        Long createId = 1L;
+        Long userId = 2L;
+        String roomId = "room1";
+
+
+        ResponseThrowMoneyDto responseThrowMoneyDto = eventMoneyService.distributeMoney(throwMoneyParams, createId, roomId);
+        requestEventMoneyDto.setToken(responseThrowMoneyDto.getToken());
+
+        receiveMoneyParams.setToken(responseThrowMoneyDto.getToken());
+        eventMoneyService.receiveMoney(receiveMoneyParams, userId, roomId);
+
+
+        // when
+        mvc.perform(
+                get("/api/kakaomoney/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(requestEventMoneyDto))
+                        .header("X-USER-ID", createId)
                         .header("X-ROOM-ID", roomId)
         )
                 // then
