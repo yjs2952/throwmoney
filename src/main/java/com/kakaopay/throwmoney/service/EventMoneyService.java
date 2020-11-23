@@ -28,6 +28,8 @@ public class EventMoneyService {
     public ResponseThrowMoneyDto distributeMoney(RequestThrowMoneyDto params, Long userId, String roomId) {
         String token = createToken(generateTokenStrategy);
         List<Long> distributedMoney = getDistributedMoney(params, distributeMoneyStrategy);
+        Money money = moneyRepository.findByMemberId(userId).orElseThrow(() -> new EntityNotFoundException("카카오 머니가 존재하지 않습니다."));
+        money.minusMoney(params.getPrice());
         return createEventMoneyList(distributedMoney, userId, roomId, token);
     }
 
