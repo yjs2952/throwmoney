@@ -21,7 +21,7 @@ public class EventMoney extends BaseTimeEntity {
     @Column(length = 3, nullable = false)
     private String token;
 
-    private Long amount;
+    private Long price;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "money_id")
@@ -44,7 +44,7 @@ public class EventMoney extends BaseTimeEntity {
     @Builder
     public EventMoney(String token, Long amount, Money money, String roomId, LocalDateTime expiredDate, LocalDateTime searchableDate, EventStatus eventStatus, EventType eventType, Long createId, Long modifyId) {
         this.token = token;
-        this.amount = amount;
+        this.price = amount;
         this.money = money;
         this.roomId = roomId;
         this.expiredDate = expiredDate;
@@ -68,5 +68,30 @@ public class EventMoney extends BaseTimeEntity {
                 .createId(userId)
                 .modifyId(userId)
                 .build();
+    }
+
+    public void receiveMoney(Long userId, String roomId){
+        validate(userId, roomId);
+        this.money.minusMoney(this.getPrice());
+        this.eventStatus = EventStatus.DONE;
+        this.modifyId = userId;
+    }
+
+    private void validate(Long userId, String roomId){
+        if (this.createId.equals(userId)) {
+            throw new IllegalArgumentException("본인이 뿌리기한 머니는 받을 수 없습니다.");
+        }
+
+        if (this.expiredDate.isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("유효기간 10분이 지난 머니입니다.");
+        }
+
+        if (!this.roomId.equals(roomId)) {
+            throw new IllegalStateException("룸에 소속된 사용자가 아닙니다.");
+        }
+
+        if (this.eventStatus == EventStatus.DONE || this.modifyId.equals(userId)) {
+            throw new IllegalStateException("이미 받은 머니입니다.");
+        }
     }
 }
