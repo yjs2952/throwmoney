@@ -2,6 +2,7 @@ package com.kakaopay.throwmoney.domain.money;
 
 import com.kakaopay.throwmoney.domain.BaseTimeEntity;
 import com.kakaopay.throwmoney.domain.member.Member;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -26,10 +27,19 @@ public class Money extends BaseTimeEntity {
     private Long createId;
     private Long modifyId;
 
+    @Builder
     public Money(Long totalAmount, Member member, Long createId, Long modifyId) {
         this.totalAmount = totalAmount;
         this.member = member;
         this.createId = createId;
         this.modifyId = modifyId;
+    }
+
+    public void addMoney(Long price){
+        this.totalAmount += price;
+    }
+
+    public void minusMoney(Long price){
+        this.totalAmount -= price;
     }
 }
