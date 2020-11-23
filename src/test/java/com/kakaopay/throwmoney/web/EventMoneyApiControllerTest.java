@@ -1,7 +1,10 @@
 package com.kakaopay.throwmoney.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kakaopay.throwmoney.service.EventMoneyService;
+import com.kakaopay.throwmoney.web.dto.RequestReceiveMoneyDto;
 import com.kakaopay.throwmoney.web.dto.RequestThrowMoneyDto;
+import com.kakaopay.throwmoney.web.dto.ResponseThrowMoneyDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,6 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -28,26 +32,33 @@ class EventMoneyApiControllerTest {
     @Autowired
     private ObjectMapper mapper;
 
-    static RequestThrowMoneyDto dto;
+    @Autowired
+    private EventMoneyService eventMoneyService;
+
+    private RequestThrowMoneyDto throwMoneyParams;
+    private RequestReceiveMoneyDto receiveMoneyParams;
 
     @BeforeEach
     void setUp() {
-        dto = RequestThrowMoneyDto.builder()
+        throwMoneyParams = RequestThrowMoneyDto.builder()
                 .price(10000L)
                 .numberOfTarget(5)
                 .build();
 
+        receiveMoneyParams = RequestReceiveMoneyDto.builder()
+                .token("aaa")
+                .build();
     }
 
     @Test
-    @DisplayName("머니 뿌리기 성공")
+    @DisplayName("머니 뿌리기 테스트 성공")
     void throwMoneyTest() throws Exception {
 
         // when
         mvc.perform(
                 post("/api/kakaomoney/")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(dto))
+                        .content(mapper.writeValueAsString(throwMoneyParams))
                         .header("X-USER-ID", 1L)
                         .header("X-ROOM-ID", "room1")
         )
@@ -64,12 +75,37 @@ class EventMoneyApiControllerTest {
         mvc.perform(
                 post("/api/kakaomoney/")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(dto))
+                        .content(mapper.writeValueAsString(throwMoneyParams))
                         .header("X-USER-ID", 11L)
                         .header("X-ROOM-ID", "room1")
         )
                 // then
                 .andExpect(status().isBadRequest())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("머니 받기 테스트 성공")
+    void receiveMoneyTest() throws Exception {
+
+        // given
+        Long createId = 1L;
+        Long userId = 2L;
+        String roomId = "room1";
+
+        ResponseThrowMoneyDto responseThrowMoneyDto = eventMoneyService.distributeMoney(throwMoneyParams, createId, roomId);
+        receiveMoneyParams.setToken(responseThrowMoneyDto.getToken());
+
+        // when
+        mvc.perform(
+                put("/api/kakaomoney/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(receiveMoneyParams))
+                        .header("X-USER-ID", userId)
+                        .header("X-ROOM-ID", roomId)
+        )
+                // then
+                .andExpect(status().isOk())
                 .andDo(print());
     }
 }
