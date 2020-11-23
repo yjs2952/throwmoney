@@ -1,10 +1,7 @@
 package com.kakaopay.throwmoney.web;
 
 import com.kakaopay.throwmoney.service.EventMoneyService;
-import com.kakaopay.throwmoney.web.dto.RequestReceiveMoneyDto;
-import com.kakaopay.throwmoney.web.dto.RequestThrowMoneyDto;
-import com.kakaopay.throwmoney.web.dto.ResponseReceiveMoneyDto;
-import com.kakaopay.throwmoney.web.dto.ResponseThrowMoneyDto;
+import com.kakaopay.throwmoney.web.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,5 +22,10 @@ public class EventMoneyApiController {
     @PutMapping("/")
     public ResponseReceiveMoneyDto receiveMoney(@RequestBody @Valid RequestReceiveMoneyDto params, @RequestHeader(value = "X-USER-ID") Long userId, @RequestHeader("X-ROOM-ID") String roomId) {
         return eventMoneyService.receiveMoney(params, userId, roomId);
+    }
+
+    @GetMapping("/")
+    public ResponseEventMoneyDto getEventMoneyList(@RequestBody @Valid RequestEventMoneyDto params, @RequestHeader(value = "X-USER-ID") Long userId, @RequestHeader("X-ROOM-ID") String roomId) {
+        return eventMoneyService.getEventMoneyList(params, userId, roomId);
     }
 }
