@@ -38,8 +38,11 @@ public class EventMoney extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private EventType eventType;
 
+    private Long createId;
+    private Long modifyId;
+
     @Builder
-    public EventMoney(String token, Long amount, Money money, String roomId, LocalDateTime expiredDate, LocalDateTime searchableDate, EventStatus eventStatus, EventType eventType) {
+    public EventMoney(String token, Long amount, Money money, String roomId, LocalDateTime expiredDate, LocalDateTime searchableDate, EventStatus eventStatus, EventType eventType, Long createId, Long modifyId) {
         this.token = token;
         this.amount = amount;
         this.money = money;
@@ -48,5 +51,22 @@ public class EventMoney extends BaseTimeEntity {
         this.searchableDate = searchableDate;
         this.eventStatus = eventStatus;
         this.eventType = eventType;
+        this.createId = createId;
+        this.modifyId = modifyId;
+    }
+
+    public static EventMoney createEventMoney(Long price, String roomId, Long userId, Money money, String token) {
+        return EventMoney.builder()
+                .amount(price)
+                .eventStatus(EventStatus.WAITING)
+                .eventType(EventType.THROW)
+                .expiredDate(LocalDateTime.now().plusMinutes(10))
+                .searchableDate(LocalDateTime.now().plusDays(7))
+                .token(token)
+                .money(money)
+                .roomId(roomId)
+                .createId(userId)
+                .modifyId(userId)
+                .build();
     }
 }

@@ -22,4 +22,14 @@ public class Money extends BaseTimeEntity {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    private Long createId;
+    private Long modifyId;
+
+    public Money(Long totalAmount, Member member, Long createId, Long modifyId) {
+        this.totalAmount = totalAmount;
+        this.member = member;
+        this.createId = createId;
+        this.modifyId = modifyId;
+    }
 }
