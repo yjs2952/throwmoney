@@ -29,8 +29,10 @@ logging:
       springframework:
         web: debug
         jdbc: debug
-#        transaction: trace
+        transaction: trace
       hibernate:
         SQL: debug
         type:
           BasicTypeRegistry: off
+          descriptor:
+            sql: trace
